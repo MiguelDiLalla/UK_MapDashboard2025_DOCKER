@@ -38,6 +38,33 @@ import numpy as np
 import plotly.express as px
 import plotly.io as pio
 
+# Fixed category orders for certain columns so legends are always consistent
+CATEGORY_ORDERS = {
+    "G_Etario": [
+        "De 15 a 24 años",
+        "De 25 a 44 años",
+        "De 45 a 64 años",
+        "65 años o más",
+    ],
+    "Antelacion_Range": [
+        "0-7 días",
+        "8-14 días",
+        "15-30 días",
+        "31-60 días",
+        "61-90 días",
+        "91-365 días",
+        "366+ días",
+    ],
+    "Repetidor": ["SI", "NO"],
+}
+
+
+def apply_category_orders(df):
+    for col, order in CATEGORY_ORDERS.items():
+        if col in df.columns:
+            df[col] = pd.Categorical(df[col], categories=order, ordered=True)
+    return df
+
 # Set Plotly dark theme and bright color palette
 def set_plotly_style():
     pio.templates.default = "plotly_dark"
@@ -62,7 +89,7 @@ def load_data():
         st.error(f"Failed to load data: {e}")
         return pd.DataFrame()
 
-df = load_data()
+df = apply_category_orders(load_data())
 
 
 # Sidebar controls
@@ -121,6 +148,9 @@ if hotel_mode == "Todos":
             else:
                 color_scale = px.colors.qualitative.Bold
                 color_args = dict(color_discrete_sequence=color_scale)
+            category_args = {}
+            if color_col in CATEGORY_ORDERS:
+                category_args = {"category_orders": {color_col: CATEGORY_ORDERS[color_col]}}
             fig_ocean = px.scatter_map(
                 df_ocean,
                 lat="lat",
@@ -133,7 +163,8 @@ if hotel_mode == "Todos":
                 height=800,
                 width=900,
                 title=f"All Hotels Reservations Colored by '{color_col}' (Q1/Q2 2025) | Canal OCEAN",
-                **color_args
+                **color_args,
+                **category_args
             )
             fig_ocean.update_layout(
                 mapbox_style="carto-darkmatter",
@@ -158,6 +189,9 @@ if hotel_mode == "Todos":
             else:
                 color_scale = px.colors.qualitative.Bold
                 color_args = dict(color_discrete_sequence=color_scale)
+            category_args = {}
+            if color_col in CATEGORY_ORDERS:
+                category_args = {"category_orders": {color_col: CATEGORY_ORDERS[color_col]}}
             fig_agency = px.scatter_map(
                 df_agency,
                 lat="lat",
@@ -170,7 +204,8 @@ if hotel_mode == "Todos":
                 height=800,
                 width=900,
                 title=f"All Hotels Reservations Colored by '{color_col}' (Q1/Q2 2025) | Canal Non-OCEAN",
-                **color_args
+                **color_args,
+                **category_args
             )
             fig_agency.update_layout(
                 mapbox_style="carto-darkmatter",
@@ -198,6 +233,9 @@ else:
                 else:
                     color_scale = px.colors.qualitative.Bold
                     color_args = dict(color_discrete_sequence=color_scale)
+                category_args = {}
+                if color_col in CATEGORY_ORDERS:
+                    category_args = {"category_orders": {color_col: CATEGORY_ORDERS[color_col]}}
                 fig_ocean = px.scatter_map(
                     df_ocean_h,
                     lat="lat",
@@ -210,7 +248,8 @@ else:
                     height=800,
                     width=900,
                     title=f"{hotel_name} Reservations Colored by '{color_col}' (Q1/Q2 2025) | Canal OCEAN",
-                    **color_args
+                    **color_args,
+                    **category_args
                 )
                 fig_ocean.update_layout(
                     mapbox_style="carto-darkmatter",
@@ -235,6 +274,9 @@ else:
                 else:
                     color_scale = px.colors.qualitative.Bold
                     color_args = dict(color_discrete_sequence=color_scale)
+                category_args = {}
+                if color_col in CATEGORY_ORDERS:
+                    category_args = {"category_orders": {color_col: CATEGORY_ORDERS[color_col]}}
                 fig_agency = px.scatter_map(
                     df_agency_h,
                     lat="lat",
@@ -247,7 +289,8 @@ else:
                     height=800,
                     width=900,
                     title=f"{hotel_name} Reservations Colored by '{color_col}' (Q1/Q2 2025) | Canal Non-OCEAN",
-                    **color_args
+                    **color_args,
+                    **category_args
                 )
                 fig_agency.update_layout(
                     mapbox_style="carto-darkmatter",
