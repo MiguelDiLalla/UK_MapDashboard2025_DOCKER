@@ -1,0 +1,28 @@
+{
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "terminal.integrated.profiles.windows": {
+        "Command Prompt": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [
+                "/K",
+                "C:\\Users\\sistemas\\Documents\\MiguelDiLalla\\activar_miguelenv310.bat"
+            ]
+        }
+    },
+    "terminal.integrated.automationProfile.windows": {
+        "env": {
+            "CONDA_DEFAULT_ENV": "MiguelEnv310",
+            "CONDA_PREFIX": "C:\\Users\\sistemas\\anaconda3\\envs\\MiguelEnv310",
+            "CONDA_PROMPT_MODIFIER": "(MiguelEnv310) ",
+            "CONDA_EXE": "C:\\Users\\sistemas\\anaconda3\\Scripts\\conda.exe",
+            "CONDA_PYTHON_EXE": "C:\\Users\\sistemas\\anaconda3\\python.exe",
+            "PATH": "C:\\Users\\sistemas\\anaconda3\\envs\\MiguelEnv310;C:\\Users\\sistemas\\anaconda3\\envs\\MiguelEnv310\\Library\\mingw-w64\\bin;C:\\Users\\sistemas\\anaconda3\\envs\\MiguelEnv310\\Library\\usr\\bin;C:\\Users\\sistemas\\anaconda3\\envs\\MiguelEnv310\\Library\\bin;C:\\Users\\sistemas\\anaconda3\\envs\\MiguelEnv310\\Scripts;C:\\Users\\sistemas\\anaconda3\\envs\\MiguelEnv310\\bin;C:\\Users\\sistemas\\anaconda3\\condabin;" // plus existing PATH
+        }
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python-envs.pythonProjects": []
+}
