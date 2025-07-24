@@ -120,6 +120,33 @@ else:
     colorable = get_colorable_columns(df[df["Hotel"].isin(selected_hotels)])
 color_col = st.sidebar.selectbox("Color by", colorable)
 
+# Filtering controls for other columns
+st.sidebar.markdown("---")
+
+filter_cols = [
+    "Pension",
+    "Tipo_Habitacion",
+    "GastoTotal",
+    "Noches",
+    "Repetidor",
+    "Antelacion_Range",
+    "G_Etario",
+]
+
+filtered_df = df.copy()
+for col in filter_cols:
+    if col == color_col or col not in df.columns:
+        continue
+    if df[col].dtype.kind in {"i", "f"}:
+        min_val = int(df[col].min())
+        max_val = int(df[col].max())
+        selected = st.sidebar.slider(col, min_val, max_val, (min_val, max_val))
+        filtered_df = filtered_df[(filtered_df[col] >= selected[0]) & (filtered_df[col] <= selected[1])]
+    else:
+        options = sorted(df[col].dropna().unique())
+        selected = st.sidebar.multiselect(col, options, default=options)
+        filtered_df = filtered_df[filtered_df[col].isin(selected)]
+
 # Map visualization
 st.markdown("""
 <style>
@@ -140,7 +167,7 @@ if hotel_mode == "Todos":
     # Plot all OCEAN and Non-OCEAN reservations together
     with col_ocean:
         st.markdown("<h3 style='color:white;'>All Hotels | Canal: OCEAN</h3>", unsafe_allow_html=True)
-        df_ocean = df[df["Canal"] == "OCEAN"]
+        df_ocean = filtered_df[filtered_df["Canal"] == "OCEAN"]
         try:
             if df_ocean[color_col].dtype.kind in 'fi':
                 color_scale = px.colors.sequential.Viridis
@@ -181,7 +208,7 @@ if hotel_mode == "Todos":
             st.error(f"Failed to plot OCEAN reservations: {e}")
     with col_agency:
         st.markdown("<h3 style='color:white;'>All Hotels | Canal: Non-OCEAN</h3>", unsafe_allow_html=True)
-        df_agency = df[df["Canal"] != "OCEAN"]
+        df_agency = filtered_df[filtered_df["Canal"] != "OCEAN"]
         try:
             if df_agency[color_col].dtype.kind in 'fi':
                 color_scale = px.colors.sequential.Viridis
@@ -225,7 +252,7 @@ else:
     for hotel_name in selected_hotels:
         with col_ocean:
             st.markdown(f"<h3 style='color:white;'>Hotel: {hotel_name} | Canal: OCEAN</h3>", unsafe_allow_html=True)
-            df_ocean_h = df[(df["Hotel"] == hotel_name) & (df["Canal"] == "OCEAN")]
+            df_ocean_h = filtered_df[(filtered_df["Hotel"] == hotel_name) & (filtered_df["Canal"] == "OCEAN")]
             try:
                 if df_ocean_h[color_col].dtype.kind in 'fi':
                     color_scale = px.colors.sequential.Viridis
@@ -266,7 +293,7 @@ else:
                 st.error(f"Failed to plot OCEAN reservations: {e}")
         with col_agency:
             st.markdown(f"<h3 style='color:white;'>Hotel: {hotel_name} | Canal: Non-OCEAN</h3>", unsafe_allow_html=True)
-            df_agency_h = df[(df["Hotel"] == hotel_name) & (df["Canal"] != "OCEAN")]
+            df_agency_h = filtered_df[(filtered_df["Hotel"] == hotel_name) & (filtered_df["Canal"] != "OCEAN")]
             try:
                 if df_agency_h[color_col].dtype.kind in 'fi':
                     color_scale = px.colors.sequential.Viridis
