@@ -139,15 +139,24 @@ color_col = st.sidebar.selectbox("Color by", colorable)
 # Filtering controls for other columns
 st.sidebar.markdown("---")
 
-filter_cols = [
-    "Pension",
-    "Tipo_Habitacion",
-    "GastoTotal",
-    "Noches",
-    "Repetidor",
-    "Antelacion_Range",
-    "G_Etario",
-]
+if hotel_mode == "Single" and len(selected_hotels) == 1:
+    filter_cols = [
+        "Pension",
+        "Tipo_Habitacion",
+        "GastoTotal",
+        "Noches",
+        "Repetidor",
+        "Antelacion_Range",
+        "G_Etario",
+    ]
+else:
+    filter_cols = [
+        "GastoTotal",
+        "Noches",
+        "Repetidor",
+        "Antelacion_Range",
+        "G_Etario",
+    ]
 
 filtered_df = df.copy()
 for col in filter_cols:
@@ -202,7 +211,7 @@ if hotel_mode == "Todos":
                 hover_data=[color_col, "Codigo_Postal", "GastoTotal", "Edad"] if "GastoTotal" in df_ocean.columns else [color_col, "Codigo_Postal", "Edad"],
                 color=color_col,
                 zoom=5,
-                center={"lat": 54.5, "lon": -3},
+                center={"lat": 54.5, "lon": -5},
                 height=800,
                 width=900,
                 title=f"All Hotels Reservations Colored by '{color_col}' (Q1/Q2 2025) | Canal OCEAN",
@@ -243,7 +252,7 @@ if hotel_mode == "Todos":
                 hover_data=[color_col, "Codigo_Postal", "GastoTotal", "Edad"] if "GastoTotal" in df_agency.columns else [color_col, "Codigo_Postal", "Edad"],
                 color=color_col,
                 zoom=5,
-                center={"lat": 54.5, "lon": -3},
+                center={"lat": 54.5, "lon": -5},
                 height=800,
                 width=900,
                 title=f"All Hotels Reservations Colored by '{color_col}' (Q1/Q2 2025) | Canal Non-OCEAN",
@@ -287,7 +296,7 @@ else:
                     hover_data=[color_col, "Codigo_Postal", "GastoTotal", "Edad"] if "GastoTotal" in df_ocean_h.columns else [color_col, "Codigo_Postal", "Edad"],
                     color=color_col,
                     zoom=5,
-                    center={"lat": 54.5, "lon": -3},
+                    center={"lat": 54.5, "lon": -5},
                     height=800,
                     width=900,
                     title=f"{hotel_name} Reservations Colored by '{color_col}' (Q1/Q2 2025) | Canal OCEAN",
@@ -328,7 +337,7 @@ else:
                     hover_data=[color_col, "Codigo_Postal", "GastoTotal", "Edad"] if "GastoTotal" in df_agency_h.columns else [color_col, "Codigo_Postal", "Edad"],
                     color=color_col,
                     zoom=5,
-                    center={"lat": 54.5, "lon": -3},
+                    center={"lat": 54.5, "lon": -5},
                     height=800,
                     width=900,
                     title=f"{hotel_name} Reservations Colored by '{color_col}' (Q1/Q2 2025) | Canal Non-OCEAN",
