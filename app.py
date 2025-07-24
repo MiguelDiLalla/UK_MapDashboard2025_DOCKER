@@ -65,6 +65,7 @@ def apply_category_orders(df):
             df[col] = pd.Categorical(df[col], categories=order, ordered=True)
     return df
 
+
 # Set Plotly dark theme and bright color palette
 def set_plotly_style():
     pio.templates.default = "plotly_dark"
@@ -107,6 +108,30 @@ def load_data():
 
 df = apply_category_orders(load_data())
 
+# Build color mappings after loading data to ensure categories are
+# consistent across hotels. These mappings are used when coloring by
+# 'Pension' or 'Tipo_Habitacion'.
+def build_color_mapping(column):
+    palette = px.colors.qualitative.Bold
+    unique_vals = sorted(df[column].dropna().unique()) if column in df.columns else []
+    return {val: palette[i % len(palette)] for i, val in enumerate(unique_vals)}
+
+COLOR_MAPPINGS = {
+    "Pension": build_color_mapping("Pension"),
+    "Tipo_Habitacion": build_color_mapping("Tipo_Habitacion"),
+}
+
+# Helper to build Plotly color arguments based on column type. For
+# categorical columns that have predefined mappings we provide the map
+# so colors remain constant across plots.
+def get_color_args(column):
+    if df[column].dtype.kind in "fi":
+        return {"color_continuous_scale": px.colors.sequential.Viridis}
+    args = {"color_discrete_sequence": px.colors.qualitative.Bold}
+    if column in COLOR_MAPPINGS:
+        args["color_discrete_map"] = COLOR_MAPPINGS[column]
+    return args
+
 
 # Sidebar controls
 st.sidebar.markdown(
@@ -134,7 +159,8 @@ if hotel_mode == "Todos":
 else:
     selected_hotels = st.sidebar.multiselect("Select Hotel(s)", all_hotels, default=all_hotels[:1])
     colorable = get_colorable_columns(df[df["Hotel"].isin(selected_hotels)])
-color_col = st.sidebar.selectbox("Color by", colorable)
+default_idx = colorable.index("G_Etario") if "G_Etario" in colorable else 0
+color_col = st.sidebar.selectbox("Color by", colorable, index=default_idx)
 
 # Filtering controls for other columns
 st.sidebar.markdown("---")
@@ -194,12 +220,7 @@ if hotel_mode == "Todos":
         st.markdown("<h3 style='color:white;'>All Hotels | Canal: OCEAN</h3>", unsafe_allow_html=True)
         df_ocean = filtered_df[filtered_df["Canal"] == "OCEAN"]
         try:
-            if df_ocean[color_col].dtype.kind in 'fi':
-                color_scale = px.colors.sequential.Viridis
-                color_args = dict(color_continuous_scale=color_scale)
-            else:
-                color_scale = px.colors.qualitative.Bold
-                color_args = dict(color_discrete_sequence=color_scale)
+            color_args = get_color_args(color_col)
             category_args = {}
             if color_col in CATEGORY_ORDERS:
                 category_args = {"category_orders": {color_col: CATEGORY_ORDERS[color_col]}}
@@ -235,12 +256,7 @@ if hotel_mode == "Todos":
         st.markdown("<h3 style='color:white;'>All Hotels | Canal: Non-OCEAN</h3>", unsafe_allow_html=True)
         df_agency = filtered_df[filtered_df["Canal"] != "OCEAN"]
         try:
-            if df_agency[color_col].dtype.kind in 'fi':
-                color_scale = px.colors.sequential.Viridis
-                color_args = dict(color_continuous_scale=color_scale)
-            else:
-                color_scale = px.colors.qualitative.Bold
-                color_args = dict(color_discrete_sequence=color_scale)
+            color_args = get_color_args(color_col)
             category_args = {}
             if color_col in CATEGORY_ORDERS:
                 category_args = {"category_orders": {color_col: CATEGORY_ORDERS[color_col]}}
@@ -279,12 +295,7 @@ else:
             st.markdown(f"<h3 style='color:white;'>Hotel: {hotel_name} | Canal: OCEAN</h3>", unsafe_allow_html=True)
             df_ocean_h = filtered_df[(filtered_df["Hotel"] == hotel_name) & (filtered_df["Canal"] == "OCEAN")]
             try:
-                if df_ocean_h[color_col].dtype.kind in 'fi':
-                    color_scale = px.colors.sequential.Viridis
-                    color_args = dict(color_continuous_scale=color_scale)
-                else:
-                    color_scale = px.colors.qualitative.Bold
-                    color_args = dict(color_discrete_sequence=color_scale)
+                color_args = get_color_args(color_col)
                 category_args = {}
                 if color_col in CATEGORY_ORDERS:
                     category_args = {"category_orders": {color_col: CATEGORY_ORDERS[color_col]}}
@@ -320,12 +331,7 @@ else:
             st.markdown(f"<h3 style='color:white;'>Hotel: {hotel_name} | Canal: Non-OCEAN</h3>", unsafe_allow_html=True)
             df_agency_h = filtered_df[(filtered_df["Hotel"] == hotel_name) & (filtered_df["Canal"] != "OCEAN")]
             try:
-                if df_agency_h[color_col].dtype.kind in 'fi':
-                    color_scale = px.colors.sequential.Viridis
-                    color_args = dict(color_continuous_scale=color_scale)
-                else:
-                    color_scale = px.colors.qualitative.Bold
-                    color_args = dict(color_discrete_sequence=color_scale)
+                color_args = get_color_args(color_col)
                 category_args = {}
                 if color_col in CATEGORY_ORDERS:
                     category_args = {"category_orders": {color_col: CATEGORY_ORDERS[color_col]}}
