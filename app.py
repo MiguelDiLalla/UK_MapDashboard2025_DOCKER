@@ -22,11 +22,11 @@ def get_colorable_columns(df):
         except TypeError:
             continue
     return valid_cols
-# Purpose: Streamlit dashboard for UK hotel reservations analysis (Q1/Q2 2025)
+# Purpose: Streamlit dashboard for UK & Ireland hotel reservations analysis (Q1/Q2 2025)
 # - Sidebar controls for hotel, canal filter, and color column selection
 # - Map visualization using Plotly (dark theme, bright palette)
 # - Rich logging for status and errors
-# - Data source: data/combined_df_cleaned.parquet
+# - Data sources: data/UK_2025_s1_GeoData.parquet and data/IE_2025_s1_GeoData.parquet
 # - Style emulates the attached dashboard (black background, white text, bold colors)
 
 import streamlit as st
@@ -80,9 +80,25 @@ set_plotly_style()
 # Load data before sidebar controls
 @st.cache_data
 def load_data():
+    """Load and combine UK and Ireland reservation data."""
     try:
-        df = pd.read_parquet("data/UK_2025_s1_GeoData.parquet")
-        rich_log("[bold green]Loaded data/UK_2025_s1_GeoData.parquet[/bold green]")
+        uk_df = pd.read_parquet("data/UK_2025_s1_GeoData.parquet")
+        ie_df = pd.read_parquet("data/IE_2025_s1_GeoData.parquet")
+
+        # Align columns between both datasets
+        uk_cols = set(uk_df.columns)
+        ie_cols = set(ie_df.columns)
+        for col in uk_cols - ie_cols:
+            ie_df[col] = np.nan
+        for col in ie_cols - uk_cols:
+            uk_df[col] = np.nan
+
+        common_cols = uk_df.columns.tolist()
+        ie_df = ie_df[common_cols]
+
+        df = pd.concat([uk_df, ie_df], ignore_index=True)
+
+        rich_log("[bold green]Loaded UK and Ireland datasets[/bold green]")
         return df
     except Exception as e:
         rich_log(f"[bold red]Failed to load data: {e}[/bold red]")
@@ -106,7 +122,7 @@ st.sidebar.markdown("""
 <style>
 .sidebar .sidebar-content {background-color: #111111; color: white;}
 </style>
-<b style='color:white;font-size:20px;'>UK Hotel Reservations Dashboard</b>
+<b style='color:white;font-size:20px;'>UK &amp; Ireland Hotel Reservations Dashboard</b>
 """, unsafe_allow_html=True)
 
 hotel_mode = st.sidebar.radio("Hotel Selection Mode", ["Todos", "Single"], index=0)
@@ -201,7 +217,7 @@ if hotel_mode == "Todos":
                 legend=dict(bgcolor="black", font_color="white"),
             )
             st.plotly_chart(fig_ocean, use_container_width=True)
-            rich_log(f"[bold green]All Hotels OCEAN reservations plotted on UK map, colored by '{color_col}'.[/bold green]")
+            rich_log(f"[bold green]All Hotels OCEAN reservations plotted on UK & Ireland map, colored by '{color_col}'.[/bold green]")
             rich_log(f"[bold yellow]Total plotted OCEAN reservations: {len(df_ocean)}[/bold yellow]")
         except Exception as e:
             rich_log(f"[bold red]Failed to plot All Hotels OCEAN reservations: {e}[/bold red]")
@@ -242,7 +258,7 @@ if hotel_mode == "Todos":
                 legend=dict(bgcolor="black", font_color="white"),
             )
             st.plotly_chart(fig_agency, use_container_width=True)
-            rich_log(f"[bold green]All Hotels Non-OCEAN reservations plotted on UK map, colored by '{color_col}'.[/bold green]")
+            rich_log(f"[bold green]All Hotels Non-OCEAN reservations plotted on UK & Ireland map, colored by '{color_col}'.[/bold green]")
             rich_log(f"[bold yellow]Total plotted Non-OCEAN reservations: {len(df_agency)}[/bold yellow]")
         except Exception as e:
             rich_log(f"[bold red]Failed to plot All Hotels Non-OCEAN reservations: {e}[/bold red]")
@@ -286,7 +302,7 @@ else:
                     legend=dict(bgcolor="black", font_color="white"),
                 )
                 st.plotly_chart(fig_ocean, use_container_width=True)
-                rich_log(f"[bold green]{hotel_name} OCEAN reservations plotted on UK map, colored by '{color_col}'.[/bold green]")
+                rich_log(f"[bold green]{hotel_name} OCEAN reservations plotted on UK & Ireland map, colored by '{color_col}'.[/bold green]")
                 rich_log(f"[bold yellow]Total plotted OCEAN reservations: {len(df_ocean_h)}[/bold yellow]")
             except Exception as e:
                 rich_log(f"[bold red]Failed to plot {hotel_name} OCEAN reservations: {e}[/bold red]")
@@ -327,7 +343,7 @@ else:
                     legend=dict(bgcolor="black", font_color="white"),
                 )
                 st.plotly_chart(fig_agency, use_container_width=True)
-                rich_log(f"[bold green]{hotel_name} Non-OCEAN reservations plotted on UK map, colored by '{color_col}'.[/bold green]")
+                rich_log(f"[bold green]{hotel_name} Non-OCEAN reservations plotted on UK & Ireland map, colored by '{color_col}'.[/bold green]")
                 rich_log(f"[bold yellow]Total plotted Non-OCEAN reservations: {len(df_agency_h)}[/bold yellow]")
             except Exception as e:
                 rich_log(f"[bold red]Failed to plot {hotel_name} Non-OCEAN reservations: {e}[/bold red]")
